@@ -48,15 +48,15 @@ static void ax12_write_packet(uint8_t servo_id, uint8_t *data, uint8_t length) {
 	packet.buffer[2] = servo_id;
 	packet.buffer[3] = length + 2;
 	packet.buffer[4] = AX12_INSTRUCTION_WRITE;
-	for (uint8_t i = 0; i < length, i++) {
+	for (uint8_t i = 0; i < length; i++) {
 		packet.buffer[5 + i] = data[i];
 	}
 	uint8_t checksum = 0;
-	for (uint8_t i = 0; i < length + 5) {
+	for (uint8_t i = 0; i < length + 5; i++) {
 		checksum += packet.buffer[i];
 	}
 	packet.buffer[5 + length] = ~checksum;
-	uart_tx(AX12_UART, &packet, packet.length);
+	uart_tx(AX12_UART, (const uint8_t *) &packet, packet.length);
 }
 
 /* Initialize the UART for the AX12s (and connect the AX12s with the switch).
@@ -79,22 +79,22 @@ void ax12_release(void) {
 /* Change the broadcast ID of ax12 servo (range 0-253).
  * DO NOT SET MULTIPLE SERVOS TO SAME ID! */
 void ax12_set_id(uint8_t prev_id, uint8_t new_id) {
-	uint8_t data[] = {0x03, new_id};
-	ax12_write_packet(prev_id, &data, 2);
+	uint8_t data[2] = {0x03, new_id};
+	ax12_write_packet(prev_id, data, 2);
 }
 
 /* Change the baud rate (initially at 1000000, must adjust UART rate to match).
  * The formula for setting baud rate is BPS = 2000000 / (value + 1). */
 void ax12_set_baud_rate(uint8_t servo_id, uint8_t value) {
-	uint8_t data[] = {0x04, value};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x04, value};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Set the delay time for status (return) packets.
  * The formula for setting return delay is t = 2µs * value. */
 void ax12_set_return_delay(uint8_t servo_id, uint8_t value) {
-	uint8_t data[] = {0x05, value};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x05, value};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Set the operating angle limits.
@@ -102,28 +102,28 @@ void ax12_set_return_delay(uint8_t servo_id, uint8_t value) {
  * The angle formula is angle = (value / 0x3ff) * 300.
  * The minimum CW limit is 0, and the maximum CWW limit is 0x3ff. */
 void ax12_set_operating_angle_limit(uint8_t servo_id, uint16_t cw, uint16_t ccw) {
-	uint8_t data_cw[] = {0x06, (uint8_t) cw, (uint8_t) (cw >> 8)};
-	uint8_t data_ccw[] = {0x08, (uint8_t) ccw, (uint8_t) (ccw >> 8)};
-	ax12_write_packet(servo_id, &data_cw, 3);
-	ax12_write_packet(servo_id, &data_ccw, 3);
+	uint8_t data_cw[3] = {0x06, (uint8_t) cw, (uint8_t) (cw >> 8)};
+	uint8_t data_ccw[3] = {0x08, (uint8_t) ccw, (uint8_t) (ccw >> 8)};
+	ax12_write_packet(servo_id, data_cw, 3);
+	ax12_write_packet(servo_id, data_ccw, 3);
 }
 
 /* Set the maximum temperature limit.
  * Values are in degrees Celsius.
  * If temperature is ever higher than limit, an over heating error will return. */
 void ax12_set_temperature_limit(uint8_t servo_id, uint8_t temp) {
-	uint8_t data[] = {0x0B, temp};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x0B, temp};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Set the operating voltage limits.
  * The formula for setting voltage limits is voltage = value / 10.
  * If voltage is ever outside limits, a voltage range error will return. */
 void ax12_set_voltage_limit(uint8_t servo_id, uint8_t low, uint8_t high) {
-	uint8_t data_low[] = {0x0C, high};
-	uint8_t data_high[] = {0x0D, high};
-	ax12_write_packet(servo_id, &data_low, 2);
-	ax12_write_packet(servo_id, &data_high, 2);
+	uint8_t data_low[2] = {0x0C, low};
+	uint8_t data_high[2] = {0x0D, high};
+	ax12_write_packet(servo_id, data_low, 2);
+	ax12_write_packet(servo_id, data_high, 2);
 }
 
 /* Set the maximum torque limit.
@@ -131,8 +131,8 @@ void ax12_set_voltage_limit(uint8_t servo_id, uint8_t low, uint8_t high) {
  * Fraction is limit / 0x3ff.
  * If torque exceeds limit, an overload error will return. */
 void ax12_set_torque_limit(uint8_t servo_id, uint16_t limit) {
-	uint8_t data[] = {0x0E, (uint8_t) limit, (uint8_t) (limit >> 8)};
-	ax12_write_packet(servo_id, &data, 3);
+	uint8_t data[3] = {0x0E, (uint8_t) limit, (uint8_t) (limit >> 8)};
+	ax12_write_packet(servo_id, data, 3);
 }
 
 /* Set the protocol for status packets.
@@ -140,43 +140,43 @@ void ax12_set_torque_limit(uint8_t servo_id, uint16_t limit) {
  * READ_ONLY: Only send status packets for read requests.
  * ALL_RESPONSE: Send status packets after any instruction. */
 void ax12_status_return_level(uint8_t servo_id, enum AX12_RETURN_LEVEL level) {
-	uint8_t data[] = {0x10, (uint8_t) level};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x10, (uint8_t) level};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Set the flags for errors that will cause the LED to blink.
  * Flags can be masked together to allow LED to blink for multiple errors. */
 void ax12_set_alarm_led(uint8_t servo_id, uint8_t flags) {
-	uint8_t data[] = {0x11, flags};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x11, flags};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Set the flags for errors that will cause the servo to stop.
  * Flags can be masked together to allow servo to stop for multiple errors.
  * If servo stops, ax12_enable must be called to reenable servo. */
 void ax12_set_alarm_shutdown(uint8_t servo_id, uint8_t flags) {
-	uint8_t data[] = {0x12, flags};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x12, flags};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Enables servo movement.
  * Must be called after shutdown from alarm or call to ax12_disable. */
 void ax12_enable(uint8_t servo_id) {
-	uint8_t data[] = {0x18, AX12_TORQUE_ENABLE};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x18, AX12_TORQUE_ENABLE};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Disable servo movement.
  * Must be followed by a call to ax12_enable to reenable movement. */
 void ax12_disable(uint8_t servo_id) {
-	uint8_t data[] = {0x18, AX12_TORQUE_DISABLE};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x18, AX12_TORQUE_DISABLE};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Toggle the servo LED */
 void ax12_toggle_led(uint8_t servo_id, bool toggle) {
-	uint8_t data[] = {0x19, toggle};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x19, toggle};
+	ax12_write_packet(servo_id, data, 2);
 }
 
 /* Set the goal position.
@@ -184,14 +184,14 @@ void ax12_toggle_led(uint8_t servo_id, bool toggle) {
  * The angle formula is angle = (value / 0x3ff) * 300.
  * The maximum possible value is 0x3ff. */
 void ax12_set_goal_position(uint8_t servo_id, uint16_t angle) {
-	uint8_t data[] = {0x1e, (uint8_t) angle, (uint8_t) (angle >> 8)};
-	ax12_write_packet(servo_id, &data, 3);
+	uint8_t data[3] = {0x1e, (uint8_t) angle, (uint8_t) (angle >> 8)};
+	ax12_write_packet(servo_id, data, 3);
 }
 
 /* Set the moving speed */
 void ax12_set_moving_speed(uint8_t servo_id, uint16_t speed) {
-	uint8_t data[] = {0x20, (uint8_t) speed, (uint8_t) (speed >> 8)};
-	ax12_write_packet(servo_id, &data, 3);
+	uint8_t data[3] = {0x20, (uint8_t) speed, (uint8_t) (speed >> 8)};
+	ax12_write_packet(servo_id, data, 3);
 }
 
 /* Lock the servo settings.
@@ -200,6 +200,6 @@ void ax12_set_moving_speed(uint8_t servo_id, uint16_t speed) {
  *     ax12_enable, ax12_toggle_led, ax12_set_goal_position,
  *     ax12_set_moving_speed */
 void ax12_lock(uint8_t servo_id) {
-	uint8_t data[] = {0x2f, AX12_LOCK};
-	ax12_write_packet(servo_id, &data, 2);
+	uint8_t data[2] = {0x2f, AX12_LOCK};
+	ax12_write_packet(servo_id, data, 2);
 }

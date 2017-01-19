@@ -42,8 +42,6 @@ uint8_t buffer_current = 0;
 
 /* Handle S-BUS packets */
 void sbus_handle_packet(void) {
-	uint16_t servo_value;
-
 	/* Verify packet integrity */
 	if (packet_buffer[0]                      != SBUS_START_BYTE ||
 		packet_buffer[SBUS_PACKET_LENGTH - 1] != SBUS_END_BYTE) {
@@ -61,22 +59,22 @@ void sbus_handle_packet(void) {
 
 	/* Convert multiple bytes of the buffer at a time to numbers and bitmask
 	 * them to isolate each channel */
-	ax12_angle(0, *((uint16_t *) packet_buffer + 1) & 0xFFE0);
-	ax12_angle(1, *((uint16_t *) packet_buffer + 2) & 0x1FFC);
-	ax12_angle(2, *((uint32_t *) packet_buffer + 3) & 0x03FF8000);
-	ax12_angle(3, *((uint16_t *) packet_buffer + 5) & 0x7FF0);
-	ax12_angle(4, *((uint16_t *) packet_buffer + 6) & 0x0FFE);
-	ax12_angle(5, *((uint32_t *) packet_buffer + 7) & 0x01FFC000);
-	ax12_angle(6, *((uint16_t *) packet_buffer + 9) & 0x3FF8);
-	ax12_angle(7, *((uint16_t *) packet_buffer + 10) & 0x07FF);
-	ax12_angle(8, *((uint16_t *) packet_buffer + 12) & 0xFFE0);
-	ax12_angle(9, *((uint16_t *) packet_buffer + 13) & 0x1FFC);
-	ax12_angle(10, *((uint32_t *) packet_buffer + 14) & 0x03FF8000);
-	ax12_angle(11, *((uint16_t *) packet_buffer + 16) & 0x7FF0);
-	ax12_angle(12, *((uint16_t *) packet_buffer + 17) & 0x0FFE);
-	ax12_angle(13, *((uint32_t *) packet_buffer + 18) & 0x01FFC000);
-	ax12_angle(14, *((uint16_t *) packet_buffer + 20) & 0x3FF8);
-	ax12_angle(15, *((uint16_t *) packet_buffer + 21) & 0x07FF);
+	ax12_set_goal_position(0, *((uint16_t *) packet_buffer + 1) & 0xFFE0);
+	ax12_set_goal_position(1, *((uint16_t *) packet_buffer + 2) & 0x1FFC);
+	ax12_set_goal_position(2, *((uint32_t *) packet_buffer + 3) & 0x03FF8000);
+	ax12_set_goal_position(3, *((uint16_t *) packet_buffer + 5) & 0x7FF0);
+	ax12_set_goal_position(4, *((uint16_t *) packet_buffer + 6) & 0x0FFE);
+	ax12_set_goal_position(5, *((uint32_t *) packet_buffer + 7) & 0x01FFC000);
+	ax12_set_goal_position(6, *((uint16_t *) packet_buffer + 9) & 0x3FF8);
+	ax12_set_goal_position(7, *((uint16_t *) packet_buffer + 10) & 0x07FF);
+	ax12_set_goal_position(8, *((uint16_t *) packet_buffer + 12) & 0xFFE0);
+	ax12_set_goal_position(9, *((uint16_t *) packet_buffer + 13) & 0x1FFC);
+	ax12_set_goal_position(10, *((uint32_t *) packet_buffer + 14) & 0x03FF8000);
+	ax12_set_goal_position(11, *((uint16_t *) packet_buffer + 16) & 0x7FF0);
+	ax12_set_goal_position(12, *((uint16_t *) packet_buffer + 17) & 0x0FFE);
+	ax12_set_goal_position(13, *((uint32_t *) packet_buffer + 18) & 0x01FFC000);
+	ax12_set_goal_position(14, *((uint16_t *) packet_buffer + 20) & 0x3FF8);
+	ax12_set_goal_position(15, *((uint16_t *) packet_buffer + 21) & 0x07FF);
 
 	/* Transfer control of the UART back to the sabertooth module */
 	ax12_release();
